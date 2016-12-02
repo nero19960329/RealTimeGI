@@ -30,6 +30,9 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Quad.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.hpp">
@@ -38,25 +41,28 @@
     <ClInclude Include="Sphere.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="MatReader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="Quad.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="BoxFragmentShader.fragmentshader">
-      <Filter>fragment_shader</Filter>
-    </None>
-    <None Include="LightFragmentShader.fragmentshader">
-      <Filter>fragment_shader</Filter>
-    </None>
     <None Include="BoxVertexShader.vertexshader">
       <Filter>vertex_shader</Filter>
     </None>
+    <None Include="BoxFragmentShader.fragmentshader">
+      <Filter>fragment_shader</Filter>
+    </None>
     <None Include="LightVertexShader.vertexshader">
       <Filter>vertex_shader</Filter>
+    </None>
+    <None Include="LightFragmentShader.fragmentshader">
+      <Filter>fragment_shader</Filter>
     </None>
   </ItemGroup>
 </Project>
