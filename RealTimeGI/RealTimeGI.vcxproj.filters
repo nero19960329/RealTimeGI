@@ -27,17 +27,29 @@
     <ClCompile Include="shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SimpleVertexShader.vertexshader">
+    <None Include="BoxVertexShader.vertexshader">
       <Filter>vertex_shader</Filter>
     </None>
-    <None Include="SimpleFragmentShader.fragmentshader">
+    <None Include="BoxFragmentShader.fragmentshader">
+      <Filter>fragment_shader</Filter>
+    </None>
+    <None Include="LightVertexShader.vertexshader">
+      <Filter>vertex_shader</Filter>
+    </None>
+    <None Include="LightFragmentShader.fragmentshader">
       <Filter>fragment_shader</Filter>
     </None>
   </ItemGroup>
