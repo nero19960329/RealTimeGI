@@ -17,6 +17,32 @@
 using namespace glm;
 using namespace std;
 
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+void do_movement();
+
+bool keys[1024];
+
+const GLuint WIDTH = 1024, HEIGHT = 768;
+
+vec3 cameraPos{ 0.0f, 0.0f, 1.4f };
+vec3 cameraDir{ 0.0f, 0.0f, -1.0f };
+vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
+
+GLfloat fov = 45.0f;
+GLfloat ratio = 4.0 / 3.0;
+GLfloat _yaw = -90.0f;
+GLfloat _pitch = 0.0f;
+GLfloat lastX = WIDTH / 2.0;
+GLfloat lastY = HEIGHT / 2.0;
+
+GLboolean mouseLeftButtonPressed = GL_FALSE;
+GLboolean mouseMiddleButtonPressed = GL_FALSE;
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
 int main() {
 	if (!glfwInit()) return -1;
 
@@ -25,7 +51,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow *window = glfwCreateWindow(1024, 768, "RealTime GI", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "RealTime GI", nullptr, nullptr);
 
 	if (!window) {
 		glfwTerminate();
@@ -33,6 +59,11 @@ int main() {
 	}
 
 	glfwMakeContextCurrent(window);
+
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK) return -1;
 
@@ -45,10 +76,6 @@ int main() {
 
 	GLuint boxProgram = LoadShaders("BoxVertexShader.vertexshader", "BoxFragmentShader.fragmentshader");
 	GLuint lightProgram = LoadShaders("LightVertexShader.vertexshader", "LightFragmentShader.fragmentshader");
-
-	mat4 Projection = perspective(radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	mat4 View = lookAt(vec3(0.0, 0.0, 1.4), vec3(0, 0, 0), vec3(0, 1, 0));
-	mat4 Model = mat4(1.0f);
 
 	vec3 vts[8] = {
 		{ -0.5f, 0.5f, 0.5f },
@@ -74,8 +101,8 @@ int main() {
 	light.init();
 
 	Sphere sphere[2] = { 
-		Sphere(vec3(0.2f, -0.3f, 0.0f), 0.2, vec3(1.0f, 0.0f, 1.0f), 60, 60),
-		Sphere(vec3(-0.3f, -0.3f, -0.3f), 0.2, vec3(0.0f, 1.0f, 1.0f), 60, 60)
+		Sphere(vec3(0.2f, -0.3f, 0.0f), 0.2, vec3(1.0f, 0.0f, 1.0f), 100, 100),
+		Sphere(vec3(-0.3f, -0.3f, -0.3f), 0.2, vec3(0.0f, 1.0f, 1.0f), 100, 100)
 	};
 	sphere[0].init();
 	sphere[1].init();
@@ -106,7 +133,16 @@ int main() {
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	do {
+	while (!glfwWindowShouldClose(window)) {
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		glfwPollEvents();
+		mouseLeftButtonPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
+		mouseMiddleButtonPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3);
+		do_movement();
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(boxProgram);
@@ -115,8 +151,11 @@ int main() {
 		GLint viewPosLoc = glGetUniformLocation(boxProgram, "viewPos");
 		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
 		glUniform3f(lightPosLoc, 0.0f, 0.499f, 0.0f);
-		glUniform3f(viewPosLoc, 0.0f, 0.0f, 1.4f);
+		glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
 
+		mat4 Projection = perspective(radians(fov), ratio, 0.1f, 100.0f);
+		mat4 View = lookAt(cameraPos, cameraPos + cameraDir, cameraUp);
+		mat4 Model = mat4(1.0f);
 		GLint modelLoc = glGetUniformLocation(boxProgram, "model");
 		GLint viewLoc = glGetUniformLocation(boxProgram, "view");
 		GLint projLoc = glGetUniformLocation(boxProgram, "projection");
@@ -146,8 +185,62 @@ int main() {
 		light.draw();
 
 		glfwSwapBuffers(window);
-		glfwPollEvents();
-	} while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
+	}
 
 	return 0;
+}
+
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode) {
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key >= 0 && key <= 1024) {
+		if (action == GLFW_PRESS) keys[key] = true;
+		else if (action == GLFW_RELEASE) keys[key] = false;
+	}
+}
+
+void do_movement() {
+	GLfloat cameraSpeed = 0.3f * deltaTime;
+	if (keys[GLFW_KEY_W]) cameraPos += cameraDir * cameraSpeed;
+	if (keys[GLFW_KEY_S]) cameraPos -= cameraDir * cameraSpeed;
+	if (keys[GLFW_KEY_A]) cameraPos -= normalize(cross(cameraDir, cameraUp)) * cameraSpeed;
+	if (keys[GLFW_KEY_D]) cameraPos += normalize(cross(cameraDir, cameraUp)) * cameraSpeed;
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	if (mouseLeftButtonPressed == GL_TRUE) {
+		GLfloat sensitivity = 0.05;
+		xoffset *= sensitivity;
+		yoffset *= sensitivity;
+
+		_yaw += xoffset;
+		_pitch += yoffset;
+
+		if (_pitch > 89.0f) _pitch = 89.0f;
+		if (_pitch < -89.0f) _pitch = -89.0f;
+
+		vec3 front;
+		front.x = cos(radians(_yaw)) * cos(radians(_pitch));
+		front.y = sin(radians(_pitch));
+		front.z = sin(radians(_yaw)) * cos(radians(_pitch));
+		cameraDir = normalize(front);
+	}
+
+	if (mouseMiddleButtonPressed == GL_TRUE) {
+		float deltaRatioW = 1.4 * xoffset / WIDTH;
+		float deltaRatioH = 1.4 * yoffset / HEIGHT;
+		cameraPos -= normalize(cross(cameraDir, cameraUp)) * deltaRatioW;
+		cameraPos -= cameraUp * deltaRatioH;
+	}
+}
+
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+	if (mouseMiddleButtonPressed == GL_TRUE) return;
+	if (fov >= 1.0f && fov <= 45.0f) fov -= yoffset;
+	if (fov <= 1.0f) fov = 1.0f;
+	if (fov >= 45.0f) fov = 45.0f;
 }
