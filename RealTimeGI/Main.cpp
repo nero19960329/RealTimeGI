@@ -7,10 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "MatReader.h"
 #include "shader.hpp"
 #include "Sphere.h"
 
 using namespace glm;
+using namespace std;
 
 int main() {
 	if (!glfwInit()) return -1;
@@ -132,6 +134,21 @@ int main() {
 	sphere[0].init();
 	sphere[1].init();
 
+	MatReader matReader("../nn/indirect_1.mat");
+	auto directNN = matReader.readNN();
+	matReader = MatReader("../nn/indirect_1.mat");
+	auto indirectNN = matReader.readNN();
+
+	//directNN.insert(directNN.end(), indirectNN.begin(), indirectNN.end());
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_1D, texture);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, directNN.size(), 0, GL_RED, GL_FLOAT, directNN.data());
+
 	do {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -150,12 +167,16 @@ int main() {
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(View));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(Projection));
 
-		glBindVertexArray(boxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_1D, texture);
+		glUniform1i(glGetUniformLocation(boxProgram, "texture"), 0);
+
+		/*glBindVertexArray(boxVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 10 * 3);
-		glBindVertexArray(0);
+		glBindVertexArray(0);*/
 
 		sphere[0].draw();
-		sphere[1].draw();
+		//sphere[1].draw();
 
 		glUseProgram(lightProgram);
 		modelLoc = glGetUniformLocation(lightProgram, "model");
