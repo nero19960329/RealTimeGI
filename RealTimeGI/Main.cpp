@@ -133,6 +133,11 @@ int main() {
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+	GLint lightColorLoc = glGetUniformLocation(boxProgram, "lightColor");
+	GLint lightPosLoc = glGetUniformLocation(boxProgram, "lightPos");
+	glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+	glUniform3f(lightPosLoc, 0.0f, 0.499f, 0.0f);
+
 	while (!glfwWindowShouldClose(window)) {
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -146,11 +151,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(boxProgram);
-		GLint lightColorLoc = glGetUniformLocation(boxProgram, "lightColor");
-		GLint lightPosLoc = glGetUniformLocation(boxProgram, "lightPos");
 		GLint viewPosLoc = glGetUniformLocation(boxProgram, "viewPos");
-		glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
-		glUniform3f(lightPosLoc, 0.0f, 0.499f, 0.0f);
 		glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
 
 		mat4 Projection = perspective(radians(fov), ratio, 0.1f, 100.0f);
@@ -184,8 +185,13 @@ int main() {
 
 		light.draw();
 
+		glFlush();
 		glfwSwapBuffers(window);
 	}
+
+	glfwDestroyWindow(window);
+
+	glfwTerminate();
 
 	return 0;
 }

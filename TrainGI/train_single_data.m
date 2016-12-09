@@ -19,4 +19,6 @@ function nnwb = train_single_data(data)
     nnwb{8} = nn.inputs{1}.range(:, 2);
     nnwb{9} = nn.outputs{3}.range(:, 1);
     nnwb{10} = nn.outputs{3}.range(:, 2);
+    
+    view(nn);
 end
