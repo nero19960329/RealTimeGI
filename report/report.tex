@@ -1,0 +1,55 @@
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{CJK}
+\usepackage{CJKutf8}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{fourier}
+\usepackage{url}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{bm}
+\usepackage[style=authoryear, natbib=true]{biblatex}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+\usepackage[
+    unicode=true,
+    hyperfootnotes=false,
+    CJKbookmarks=false,
+    colorlinks,
+    linkcolor=blue,
+    anchorcolor=blue,
+    citecolor=blue
+    ]{hyperref}
+
+\addbibresource{bibtex.bib}
+
+\begin{document}
+\begin{CJK*}{UTF8}{kai}
+\makeatletter
+\CTEXsetup[format=\Large\bfseries]{section}
+\makeatother
+
+\newgeometry{top=10cm}
+\input{title}
+\restoregeometry
+\tableofcontents
+\clearpage
+
+
+\input{env}
+\input{target}
+%\input{instruction}
+\input{algorithm}
+%\clearpage
+%\input{dir}
+%\input{others}
+
+\printbibliography
+
+\end{CJK*}
+\end{document}

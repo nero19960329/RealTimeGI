@@ -1,0 +1,94 @@
+\section {操作说明}
+\subsection {程序运行方法}
+在控制台运行渲染程序，需要输入三个参数：用于渲染的场景文件（".scene"），漫游/只渲染模式（-travel/-render），在渲染模式下图像的存储位置。其中场景文件的定义将会在之后详细讲述。比如：\\
+\centerline{RayTracer.exe cornell\_box.scene -travel}
+即可让渲染器执行对康奈尔盒场景进行渲染，并可以在其中进行漫游的操作。漫游模式只建议在小场景中使用，对于较大或者需要进行超采样的场景，建议使用渲染模式：
+\centerline{RayTracer.exe dragon.scene -render dragon.png}
+即可让渲染器执行对dragon.scene场景进行渲染并将图像存储为dragon.png的操作。渲染过程中会在控制台中显示进度条及剩余时间，并在渲染成功后显示渲染时间。
+
+\subsection {漫游方法}
+在以漫游方式进入程序后，可以通过表\ref{table:travel_keyboard}所示方法来进行漫游。
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|}
+    \hline
+    键盘按键 & 效果\\
+    \hline
+    W、S、A、D键 & 前进、后退、左移、右移一小步\\
+    \hline
+    上、下、左、右箭头键 & 向上、向下、向左、向右旋转一点角度\\
+    \hline
+    T键 & 切换正投影/透视投影模式\\
+    \hline
+    Q键 & 退出程序\\
+    \hline
+    \end{tabular}
+    \caption{漫游按键表}
+    \label{table:travel_keyboard}
+\end{table}
+
+\subsection {场景文件的定义}
+场景文件中存储了照相机以及各个景物的信息。以\#开头的行被视为注释，每块信息的首行为即将定义的目标，随后几行为该目标的属性。建议在定义场景时，属性的顺序严格按照如下的顺序进行书写（带*的属性为非必需属性）。
+\begin{description}[noitemsep]
+\item[照相机] Viewer
+    \begin{description}[noitemsep]
+    \item[图像大小] geo int(width) int(height)
+    \item[视口大小（正投影参数）*] view int(width) int(height)
+    \item[照相机位置] center vec3
+    \item[目标位置] target vec3
+    \item[照相机北方] up vec3
+    \item[视角（上下）] fovy double
+    \item[景深*] dop double(光圈大小) double(焦距) int(超采样数)
+    \item[抗锯齿*] anti int(超采样数)
+    \end{description}
+\item[点光源] Light
+    \begin{description}[noitemsep]
+    \item[面光源设置*] area int(采样数的平方根) double(模拟球光源的半径)
+    \item[位置] origin vec3
+    \item[颜色] color string(颜色名)
+    \item[光强] intensity double
+    \end{description}
+\item[无限平面] Plane
+    \begin{description}[noitemsep]
+    \item[纹理] texture ...
+    \item[法向] normal vec3
+    \item[偏移量] offset double
+    \end{description}
+\item[球] Sphere
+    \begin{description}[noitemsep]
+    \item[纹理] texture ...
+    \item[中心] center vec3
+    \item[半径] radius double
+    \item[内部折射率*] refraction\_index string(折射率种类)
+    \end{description}
+\item[三角网格面] Face
+    \begin{description}[noitemsep]
+    \item[纹理] texture ...
+    \item[点A] a vec3
+    \item[点B] b vec3
+    \item[点C] c vec3
+    \end{description}
+\item[网格模型] Mesh
+    \begin{description}[noitemsep]
+    \item[纹理] texture ...
+    \item[模型文件名] file string
+    \item[中心位置] center vec3
+    \item[包围球半径] radius double
+    \item[光滑着色*] smooth bool(true/false)
+    \end{description}
+\end{description}
+
+接下来对几个需要输入特殊值的属性做详细说明：
+\begin{description}[noitemsep]
+\item[颜色名] 共有8种颜色：WHITE,BLACK,RED,GREEN,BLUE,YELLOW,CYAN,MAGENTA
+\item[材料名] 共有5种材料：FLOOR,MIRROR（全镜面反射）,A\_BIT\_MIRROR（一点镜面反射）,TRANSPARENT\_MATERIAL（全透明）,PLASTIC
+\item[折射率种类] 共有3种折射率：VACUUM\_REFRACTION\_INDEX（真空）,WATER\_REFRACTION\_INDEX（水）,GLASS\_REFRACTION\_INDEX （玻璃）
+\item[纹理] 均以texture开头，需要注意的是，图片纹理只支持正方形图片作为输入。
+    \begin{description}[noitemsep]
+    \item[纯色纹理] PureTexture string(材料名) string(颜色名)
+    \item[黑白格纹理] GridTexture string(材料名) int(格密度)
+    \item[图片纹理] ImageTexture string(材料名) string(纹理图片名) int(纹理大小)*
+    \end{description}
+\end{description}
+
+具体样例可以见scene目录下的所有场景文件。其中cornell\_box.scene是建议用来进行漫游的场景，其余场景可以根据情况进行各种程度上的渲染。

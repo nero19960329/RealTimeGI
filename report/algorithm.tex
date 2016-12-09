@@ -1,0 +1,81 @@
+\section {实现内容}
+\subsection {光线追踪}
+这一部分在第二次小作业中已经基本实现，在本次实验中，对之前的光线追踪渲染器进行进一步修改及扩展。
+
+\subsubsection {多线程下随机数生成}
+在之前的作业中使用了C的srand方法种下种子，并调用rand方法来获取伪随机数。在多线程加速的情况下，会导致多个线程产生相同随机数的情况，但这并不是我们想要的结果。
+
+在本次实验中，实现了RNGenerator类，以支持对多线程随机数的生成。RNGenerator类封装了C++11的随机数生成引擎，并且使用梅森旋转算法\footnote{\url{https://en.wikipedia.org/wiki/Mersenne_Twister}} 来进行随机数的生成。当然，最主要的目标还是要保证不同线程的种子不同。在对RNGenerator类进行实例化时，将会使用当时的时间及当前线程ID做异或操作，用上述结果作为随机数种子，从而保证了多线程随机数生成的随机性。
+
+\subsubsection {额外渲染对象的支持}
+实现了对四边形的支持，使用了[\cite{lagae2005efficient}]所述的光线与四边形快速求交的算法。以此为基础，即可实现对康奈尔盒模型的渲染。
+
+\subsection {蒙特卡洛路径追踪}
+路径追踪\footnote{\url{https://en.wikipedia.org/wiki/Path_tracing}}是一种对真实世界下全局光照的蒙特卡洛渲染方法，笼统来讲，该算法利用蒙特卡洛方法对渲染方程进行近似，从而达到对真实情况的逼近。在本次实验中，路径追踪渲染器用来作为直接/非直接光照的数据生成器及用来对比的Ground-Truth 数据生成器。
+
+\subsubsection {渲染方程}
+渲染方程\footnote{\url{https://en.wikipedia.org/wiki/Rendering_equation}} 于1986年被引入计算机图形学，在不考虑波长$\lambda$及时间$t$的情况下，其形式如下：
+\[
+    L_{o}(\bm{x}, \omega_{o})=L_{e}(\bm{x}, \omega_{0})+\int_{\Omega}f_{r}(\bm{x}, \omega_{i}, \omega_{o})L_{i}(\bm{x}, \omega_{i})(\omega_{i}\cdot\bm{n})d\omega_{i}
+\]
+其中\\
+\begin{itemize}[noitemsep]
+    \item $L_{o}(\bm{x}, \omega_{o})$ 代表在位置$\bm{x}$以及角度$\omega_{o}$的出射光
+    \item $L_{e}(\bm{x}, \omega_{o})$ 代表上述位置及方向发出的光
+    \item $\int_{\Omega} ...d\omega_{i}$ 代表入射方向半球的无穷小累加和
+    \item $f_{r}(\bm{x}, \omega_{i}, \omega_{o})$ 是BRDF，也即在该点从入射方向到出射方向光的反射比例
+    \item $L_{i}(\bm{x}, \omega_{i})$ 代表该点的入射光位置及方向$\omega_{i}$
+\end{itemize}
+
+\subsubsection {重要性采样}
+在蒙特卡洛方法模拟积分时，采用重要性采样方法会使蒙特卡洛方法得到结果的方差减小，从而使算法更好更快地收敛至正确结果。
+
+在路径追踪的过程中，当追踪光线与某物体存在一个交点时，需要随机确定一个反射方向从而继续追踪，此时就需要使用重要性采样来对不同的BRDF进行方向的选择。方向向量$\omega$可以由天顶角$\theta$及方位角$\phi$ 确定，接下来介绍两种BRDF的重要性采样方法。
+
+如果该物体的BRDF是Lambertian，也即$f_{r}(\bm{x}, \omega_{i}, \omega_{o})=\frac{\rho}{\pi}$。假设$u,v$是两个属于$[0,1]$且均匀分布的随机数，那么
+\[
+    (\theta, \phi)=(arccos(\sqrt{1-u}), 2\pi v)
+\]
+概率分布函数为
+\[
+    pdf(\omega_{i})=\frac{cos(\theta)}{\pi}
+\]
+
+如果该物体的BRDF是Phong，也即$f_{r}(\bm{x}, \omega_{i}, \omega_{o})=\frac{k_{d}}{\pi}+k_{s}\frac{(n+2)}{2\pi}cos^{n}(\alpha)$。 由于表达式的前半部分与Lambertian一致，我们只讨论后半部分的情况。$u,v$的定义同上，则
+\[
+    (\theta, \phi)=(arccos(u^{\frac{1}{n+1}}), 2\pi v)
+\]
+概率分布函数为
+\[
+    pdf(\omega_{i})=\frac{n+1}{2\pi}cos^{n}(\alpha)
+\]
+其中$\alpha$为$\omega_{o}$与$\bm{n}$所成的夹角。
+
+\subsubsection {直接光照\& 非直接光照}
+由于在之后的实验中，会对场景中每个物体的直接光照及非直接光照进行训练，所以需要将当前的渲染方法拆成直接光照值和非直接光照值。
+
+当追踪光线与某物体存在一个交点时，每次只需递归跟踪一条路径，现在追踪两条：一条指向光源$\omega_{direct}$，另一条与之前相同，仍然通过重要性采样随机进行跟踪$\omega_{indirect}$。其中，$\omega_{direct}$路径无需继续递归，只计算光源的发射值，$\omega_{indirect}$路径则继续递归跟踪下去。计算直接光照的伪代码见算法~\ref{alg:direct}：
+\begin{algorithm}
+\begin{algorithmic}
+    \STATE $\omega_{i},pdf=$luminaireSample($x,\bm{n}$)
+    \STATE $y=$traceRay($x,\omega_{i}$)
+    \RETURN brdf($x,\omega_{i},\omega_{r}$)$\cdot$emittedRadiance($y,-\omega_{i}$)$/pdf$
+\end{algorithmic}
+\caption{directRadianceEst($x,\omega_{r}$)}
+\label{alg:direct}
+\end{algorithm}
+这里提到了对光源的采样以及概率密度分布函数问题，这个问题将在下一小节说明。计算非直接光照的伪代码见算法~\ref{alg:indirect}：
+\begin{algorithm}
+\begin{algorithmic}
+    \IF {random()$<$survivalProbability}
+        \STATE $\omega_{i},pdf=$brdfSample($x,\bm{n}$)
+        \STATE $y=$traceRay($x,\omega_{i}$)
+        \RETURN brdf($x,\omega_{i},\omega_{r}$)$\cdot$reflectedRadianceEst($y,-\omega_{i}$)$/(pdf\cdot$survivalProbability$)$
+    \ELSE
+        \RETURN 0
+    \ENDIF
+\end{algorithmic}
+\caption{indirectRadianceEst($x,\omega_{r}$)}
+\label{alg:indirect}
+\end{algorithm}
+ 
