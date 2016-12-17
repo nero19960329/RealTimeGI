@@ -62,7 +62,7 @@ vec3 getColor(float input[15], int offset) {
 }
 
 void main() {
-	vec3 hitPoint = FragPos;
+	/*vec3 hitPoint = FragPos;
 	vec3 viewDir = normalize(hitPoint - viewPos);
 	vec3 normal = Normal;
 	vec3 brdfParameter = ObjectColor;
@@ -77,5 +77,6 @@ void main() {
 	vec3 direct = getColor(input, 0);
 	vec3 indirect = getColor(input, 599);
 
-	color = vec4(direct + indirect, 1.0);
+	color = vec4(direct + indirect, 1.0);*/
+	color = vec4((Normal + 1.0) * 0.5f, 1.0);
 }

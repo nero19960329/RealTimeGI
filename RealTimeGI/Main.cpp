@@ -11,6 +11,8 @@
 #include "shader.hpp"
 #include "Sphere.h"
 #include "Quad.h"
+#include "Mesh.h"
+#include "ObjReader.h"
 
 #include <sstream>
 
@@ -107,6 +109,17 @@ int main() {
 	sphere[0].init();
 	sphere[1].init();
 
+	ObjReader objReader[2] = {
+		ObjReader("../objs/teapot.obj", vec3{ -0.13, -0.3, -0.2 }, 0.4),
+		ObjReader("../objs/bunny.obj", vec3{ 0.25, -0.35, 0.1 }, 0.3)
+	};
+	Mesh meshes[2] = {
+		Mesh(objReader[0], vec3{ 1.0, 1.0, 1.0 }),
+		Mesh(objReader[1], vec3{ 0.0, 0.6, 1.0 })
+	};
+	meshes[0].init();
+	meshes[1].init();
+
 	vector<float> nns;
 	rep(i, 7) {
 		ostringstream oss;
@@ -171,9 +184,11 @@ int main() {
 		}
 
 		glUniform1i(objIDLoc, 0);
-		sphere[0].draw();
+		meshes[0].draw();
+		//sphere[0].draw();
 		glUniform1i(objIDLoc, 1);
-		sphere[1].draw();
+		meshes[1].draw();
+		//sphere[1].draw();
 
 		glUseProgram(lightProgram);
 		modelLoc = glGetUniformLocation(lightProgram, "model");
@@ -205,7 +220,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 void do_movement() {
-	GLfloat cameraSpeed = 0.3f * deltaTime;
+	GLfloat cameraSpeed = 0.6f * deltaTime;
 	if (keys[GLFW_KEY_W]) cameraPos += cameraDir * cameraSpeed;
 	if (keys[GLFW_KEY_S]) cameraPos -= cameraDir * cameraSpeed;
 	if (keys[GLFW_KEY_A]) cameraPos -= normalize(cross(cameraDir, cameraUp)) * cameraSpeed;

@@ -33,6 +33,15 @@
     <ClCompile Include="Quad.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ObjReader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexVec.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.hpp">
@@ -48,6 +57,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Quad.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjReader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexVec.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

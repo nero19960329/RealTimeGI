@@ -9,6 +9,11 @@ using real_t = double;
 #define repa(x, y, z) for (auto x = decltype(z){y}; x != z; ++x)
 #define repd(x, y, z) for (auto x = decltype(z){y}; x != z; --x)
 
+template<typename T>
+inline void updateMax(T &value, const T &max) {
+	if (value < max) value = max;
+}
+
 __declspec(noreturn) inline void error_exit(const char *msg) {
 	printf("%s", msg);
 	exit(0);

@@ -1,12 +1,10 @@
 #pragma once
 
-#include <gl/glew.h>
-#include <glm/glm.hpp>
+#include "Object.h"
 
-class Sphere {
+class Sphere : public Object {
 private:
 	int lats, longs;
-	GLuint vao, vbo;
 
 	glm::vec3 center, color;
 	double radius;
@@ -15,6 +13,6 @@ public:
 	Sphere(const glm::vec3 &_center, double _radius, const glm::vec3 &_color, int _lats = 40, int _longs = 40);
 	~Sphere();
 
-	void init();
-	void draw();
+	void init() override;
+	void draw() override;
 };
