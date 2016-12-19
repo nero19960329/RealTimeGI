@@ -102,12 +102,12 @@ int main() {
 	Quad light{ vec3(-0.12f, 0.499f, 0.12f), vec3(-0.12f, 0.499f, -0.12f), vec3(0.12f, 0.499f, -0.12f), vec3(0.12f, 0.499f, 0.12f), vec3(0.0f, -1.0f, 0.0f), vec3(1.0f, 1.0f, 1.0f) };
 	light.init();
 
-	Sphere sphere[2] = { 
-		Sphere(vec3(0.2f, -0.3f, 0.0f), 0.2, vec3(1.0f, 0.0f, 1.0f), 100, 100),
-		Sphere(vec3(-0.3f, -0.3f, -0.3f), 0.2, vec3(0.0f, 1.0f, 1.0f), 100, 100)
-	};
-	sphere[0].init();
-	sphere[1].init();
+	//Sphere sphere[2] = { 
+	//	Sphere(vec3(0.2f, -0.3f, 0.0f), 0.2, vec3(1.0f, 0.0f, 1.0f), 100, 100),
+	//	Sphere(vec3(-0.3f, -0.3f, -0.3f), 0.2, vec3(0.0f, 1.0f, 1.0f), 100, 100)
+	//};
+	//sphere[0].init();
+	//sphere[1].init();
 
 	ObjReader objReader[2] = {
 		ObjReader("../objs/teapot.obj", vec3{ -0.13, -0.3, -0.2 }, 0.4),

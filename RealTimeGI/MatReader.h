@@ -47,7 +47,11 @@ public:
 		pushFloats(res, mxGetCell(pa, 9));
 		pushFloats_w1(res, mxGetCell(pa, 0), usedMap);
 
-		repa(i, 1, 6) pushFloats(res, mxGetCell(pa, i));
+		pushFloats(res, mxGetCell(pa, 1));
+		pushFloats(res, mxGetCell(pa, 2));
+		pushFloats(res, mxGetCell(pa, 3));
+		pushFloats_layer3(res, mxGetCell(pa, 4));
+		pushFloats_layer3(res, mxGetCell(pa, 5));
 
 		mxDestroyArray(pa);
 		matClose(pmat);
@@ -62,6 +66,20 @@ private:
 
 		if (!p) error_exit("Null mat file!\n");
 		rep(i, rows) rep(j, cols) vec.push_back(p[j * rows + i]);
+	}
+
+	void pushFloats_layer3(std::vector<float> &vec, mxArray *parr) const {
+		real_t *p = mxGetPr(parr);
+		int rows = mxGetM(parr), cols = mxGetN(parr);
+
+		if (!p) error_exit("Null mat file!\n");
+		if (rows == 3) rep(i, rows) rep(j, cols) vec.push_back(p[j * rows + i]);
+		else if (rows == 2) {
+			rep(i, 3) rep(j, cols) {
+				if (!i) vec.push_back(0.0);
+				else vec.push_back(p[j * rows + i - 1]);
+			}
+		}
 	}
 
 	void pushFloats_w1(std::vector<float> &vec, mxArray *parr, std::array<int, 15> &usedMap) const {
